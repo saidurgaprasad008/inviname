@@ -1,0 +1,8 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "in.inviname.app",
+    "sha256_cert_fingerprints": ["F3:2D:A6:04:99:2B:1C:70:C3:30:24:65:FA:9E:4A:4A:A3:34:F3:7A:6F:5B:81:C8:78:F5:FD:72:CD:36:77:1B"]
+  }
+}]
