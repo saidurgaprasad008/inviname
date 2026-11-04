@@ -7,6 +7,7 @@ import { formatINR, img, useCatalog } from '../data/catalog.js'
 import { setQty, removeFromCart, cartCount } from '../data/cart.js'
 import { useCheckout } from '../data/checkout.js'
 import { joinWaitlist } from '../data/waitlist.js'
+import { usePinPlace } from '../data/pincode.js'
 import usePageTitle from '../lib/usePageTitle.js'
 import ArtImage from '../components/home/ArtImage.jsx'
 import ProductCard from '../components/shop/ProductCard.jsx'
@@ -18,6 +19,7 @@ export default function Cart() {
   const c = useCheckout()
   const navigate = useNavigate()
   const { q, pay, settings, method, zone, wholesale } = c
+  const place = usePinPlace(c.pin)
 
   if (!c.ready) return <div className="container-page py-20"><div className="skeleton h-64 rounded-3xl" /></div>
   if (!c.items.length) return <EmptyCart cat={cat} />
@@ -119,7 +121,7 @@ export default function Cart() {
                 <div className="mt-4">
                   <label htmlFor="cart-pin" className="text-sm text-muted">Delivery pincode</label>
                   <input id="cart-pin" inputMode="numeric" autoComplete="postal-code" maxLength={6} value={c.pin} onChange={(e) => c.setPin(e.target.value.replace(/\D/g, ''))} placeholder="6-digit pincode" className="field mt-1.5 w-full" />
-                  {c.pin.length === 6 && ['A', 'B', 'C'].includes(zone) && <p className="mt-2 flex items-center gap-1.5 text-sm text-[#8fd19e]"><IconCheck className="h-4 w-4" /> We deliver to {c.pin}</p>}
+                  {c.pin.length === 6 && ['A', 'B', 'C'].includes(zone) && <p className="mt-2 flex items-center gap-1.5 text-sm text-[#8fd19e]"><IconCheck className="h-4 w-4" /> We deliver to {c.pin}{place && <span className="text-muted"> · {place.areas.length === 1 ? place.areas[0] + ', ' : ''}{place.district}</span>}</p>}
                   {zone === 'soon' && <Waitlist pin={c.pin} />}
                   {c.pin.length === 6 && zone === 'invalid' && <p className="mt-2 text-sm text-rose-light">Please check the pincode.</p>}
                   <p className="mt-2 text-xs text-muted">We deliver to Andhra Pradesh &amp; Telangana.</p>

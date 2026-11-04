@@ -1,6 +1,7 @@
 // src/pages/Checkout.jsx — delivery details + order summary → place order → payment page (/order/INV-…).
 // Login is required (see App.jsx). The address is remembered on this device for next time.
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { usePinPlace } from '../data/pincode.js'
 import { Link, Navigate } from 'react-router'
 import { useAuth } from '../data/auth.js'
 import { useCheckout } from '../data/checkout.js'
@@ -29,6 +30,11 @@ export default function Checkout() {
   const [f, setF] = useState(() => ({ name: user?.name || '', phone: '', address: '', landmark: '', city: '', ...saved(), pincode: c.pin }))
   const [err, setErr] = useState('')
   const [busy, setBusy] = useState(false)
+  const place = usePinPlace(f.pincode)
+  // fill the village automatically when the pincode has only one village / area
+  useEffect(() => {
+    if (place && place.areas.length === 1) setF((o) => (o.city.trim() ? o : { ...o, city: `${place.areas[0]}, ${place.district}` }))
+  }, [place])
   const [placed, setPlaced] = useState('')
   const set = (k) => (e) => {
     const v = k === 'phone' || k === 'pincode' ? e.target.value.replace(/\D/g, '').slice(0, k === 'phone' ? 10 : 6) : e.target.value
@@ -48,7 +54,7 @@ export default function Checkout() {
     if (!/^[6-9]\d{9}$/.test(f.phone)) return setErr('Please enter a valid 10-digit mobile number (we send order updates on WhatsApp).')
     if (!pickup) {
       if (f.address.trim().length < 8) return setErr('Please enter your full address (house, street, area).')
-      if (f.city.trim().length < 2) return setErr('Please enter your town or city.')
+      if (f.city.trim().length < 2) return setErr('Please enter your village or town.')
       if (!c.q.deliverable) return setErr('We do not deliver to this pincode yet. Choose pickup in the cart, or use another address.')
     }
     if (!c.canCheckout) return setErr(c.problems[0] || 'Please check your cart.')
@@ -88,10 +94,26 @@ export default function Checkout() {
               <>
                 <Input className="sm:col-span-2" label="House no., street, area" value={f.address} onChange={set('address')} autoComplete="street-address" />
                 <Input label="Landmark (optional)" value={f.landmark} onChange={set('landmark')} />
-                <Input label="Town / city" value={f.city} onChange={set('city')} autoComplete="address-level2" />
+                <div>
+                  <Input label="Village / town" value={f.city} onChange={set('city')} autoComplete="address-level2" />
+                  {place && place.areas.length > 1 && (
+                    <div className="mt-2">
+                      <p className="text-xs text-muted">Areas for {f.pincode} · {place.district} – tap yours:</p>
+                      <div className="mt-1.5 flex flex-wrap gap-1.5">
+                        {place.areas.map((a) => (
+                          <button key={a} type="button" onClick={() => setF((o) => ({ ...o, city: `${a}, ${place.district}` }))}
+                            className={`rounded-full border px-3 py-1 text-xs ${f.city.startsWith(a + ',') ? 'border-gold bg-gold/15 text-cream' : 'border-plum-line text-muted hover:border-gold/50'}`}>
+                            {a}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
                 <div>
                   <Input label="Pincode" value={f.pincode} onChange={set('pincode')} inputMode="numeric" autoComplete="postal-code" />
                   {f.pincode.length === 6 && !c.q.deliverable && <p className="mt-1.5 text-xs text-rose-light">We don’t deliver to this pincode yet.</p>}
+                  {place && c.q.deliverable && <p className="mt-1.5 text-xs text-muted">{place.district}, {place.state}</p>}
                 </div>
               </>
             )}

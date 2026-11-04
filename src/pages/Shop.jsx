@@ -218,8 +218,17 @@ export default function Shop() {
             </ul>
           ) : (
             <div className="card mx-auto max-w-lg px-6 py-12 text-center">
-              <h2 className="text-3xl">No pieces match</h2>
-              <p className="mt-2 text-muted">Try removing a filter, or tell us what you have in mind and we will make it for you.</p>
+              {typeof navigator !== 'undefined' && navigator.onLine === false ? (
+                <>
+                  <h2 className="text-3xl">You are offline</h2>
+                  <p className="mt-2 text-muted">Connect to the internet to see our pieces, then reopen the app.</p>
+                </>
+              ) : (
+                <>
+                  <h2 className="text-3xl">No pieces match</h2>
+                  <p className="mt-2 text-muted">Try removing a filter, or tell us what you have in mind and we will make it for you.</p>
+                </>
+              )}
               <div className="mt-6 flex flex-wrap justify-center gap-3">
                 <button type="button" onClick={clearAll} className="btn-ghost">Clear filters</button>
                 <a href={waLink('Hi Inviname Arts, I am looking for a custom piece.')} target="_blank" rel="noopener noreferrer" className="btn-rose">
